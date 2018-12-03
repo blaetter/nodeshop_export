@@ -1,0 +1,9 @@
+name: NodeShop Export Orders
+description: Exports selected orders with matching structure to import into the Verlags-DB
+package: Blätter
+
+type: module
+core: 8.x
+
+dependencies:
+  - nodeshop:nodeshop

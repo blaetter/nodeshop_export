@@ -1,0 +1,9 @@
+id: nodeshop_export_export
+label: 'Export orders'
+status: true
+langcode: en
+type: nodeshop_order
+plugin: nodeshop_export_export
+dependencies:
+  module:
+    - nodeshop

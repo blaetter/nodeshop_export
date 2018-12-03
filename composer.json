@@ -1,0 +1,12 @@
+{
+    "name": "drupal/nodeshop_export",
+    "type": "drupal-module",
+    "description": "Exports NodeShop orders.",
+    "keywords": ["Drupal"],
+    "license": "GPL-2.0+",
+    "version": "1.x-dev",
+    "minimum-stability": "dev",
+    "require": {
+        "php": ">=7.0"
+    }
+}
