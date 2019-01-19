@@ -13,8 +13,6 @@ use Drupal\Core\Messenger\MessengerTrait;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 
-
-
 /**
  * Exports orders to be imported into the "Verlags-DB".
  *
@@ -38,7 +36,7 @@ class NodeShopOrderExport extends ActionBase
     /**
      * {@inheritdoc}
      */
-    public function execute(Order $order = NULL)
+    public function execute(Order $order = null)
     {
         foreach ($order->getOrderProducts() as $order_product) {
             //Means OrderArray - not elegant but usefull
@@ -70,13 +68,17 @@ class NodeShopOrderExport extends ActionBase
             $export['lort']             = Helper::getValue($order, 'delivery_city');
             $export['ladressmerkmal1']  = Helper::getValue($order, 'delivery_street_addon');
             // //Bestellungen buecher, onlineartikel etc...
-            if (
-                (!$node->hasField('field_warenid') || $node->hasField('field_warenid') && empty($node->get('field_warenid')->value))
-                || ($node->hasField('field_warenid')
+            if ((
+                !$node->hasField('field_warenid')
+                || $node->hasField('field_warenid')
+                && empty($node->get('field_warenid')->value)
+                )
+                || (
+                    $node->hasField('field_warenid')
                     && "1" != Helper::getValue($node, 'field_warenid')
                     && "2" != Helper::getValue($node, 'field_warenid')
                     && "5" != Helper::getValue($node, 'field_warenid')
-                    )
+                )
             ) {
                 if ($node->hasField('field_warenid') && !empty(Helper::getValue($node, 'field_warenid'))) {
                     //feste Artikelnummer
@@ -118,8 +120,6 @@ class NodeShopOrderExport extends ActionBase
                     continue;
                 }
                 $bonus= \Drupal::entityManager()->getStorage('node')->load($bonus_node_id);
-                dsm($bonus_node_id);
-                dsm(Helper::getValue($bonus, 'field_warenid'));
                 //Abo-Praemie
                 if ('' != Helper::getValue($bonus, 'field_warenid')) {
                     $export['partikelnr'] = Helper::getValue($bonus, 'field_warenid');
@@ -161,7 +161,8 @@ class NodeShopOrderExport extends ActionBase
     /**
     * {@inheritdoc}
     */
-    public function executeMultiple(array $entities) {
+    public function executeMultiple(array $entities)
+    {
         foreach ($entities as $entity) {
             $this->execute($entity);
         }
@@ -173,7 +174,8 @@ class NodeShopOrderExport extends ActionBase
         $response = new Response($exportstring);
 
         $disposition = $response->headers->makeDisposition(
-            ResponseHeaderBag::DISPOSITION_ATTACHMENT, 'shopbest.csv'
+            ResponseHeaderBag::DISPOSITION_ATTACHMENT,
+            'shopbest.csv'
         );
 
         $response->headers->set('Content-Type', 'text/csv; charset=utf-8');
@@ -184,29 +186,34 @@ class NodeShopOrderExport extends ActionBase
         // mark entities as exported.
         foreach ($entities as $entity) {
             if ($entity->hasField('exported')) {
-              $entity->exported->value = true;
-              $entity->save();
+                $entity->exported->value = true;
+                $entity->addOrderHistoryEntry(
+                    'Exported order',
+                    []
+                );
+                $entity->save();
             }
         }
 
-        $this->messenger()->addMessage('Die Datensätze wurden exportiert und als exportiert markiert. Über die Suche können die Datensätze wieder gefunden und bei Bedarf erneut exportiert werden.');
+        $this->messenger()->addMessage(
+            'Die Datensätze wurden exportiert und als exportiert markiert. ' .
+            'Über die Suche können die Datensätze wieder gefunden und bei Bedarf erneut exportiert werden.'
+        );
 
         // we cut hard here, so no extra content is transmitted from Drupal
         // it would be quite nice, if there is another way to handle the request
         // but as long as action plugins does not transfer return values to the
         // end user, we need to do it this way.
         exit;
-
     }
 
     /**
      * {@inheritdoc}
      */
-    public function access($object, AccountInterface $account = NULL, $return_as_object = FALSE) {
-
-        $result = $object->access('export', $account, TRUE);
+    public function access($object, AccountInterface $account = null, $return_as_object = false)
+    {
+        $result = $object->access('export', $account, true);
 
         return $return_as_object ? $result : $result->isAllowed();
     }
-
 }
