@@ -119,7 +119,7 @@ class NodeShopOrderExport extends ActionBase
                 } else {
                     continue;
                 }
-                $bonus= \Drupal::entityManager()->getStorage('node')->load($bonus_node_id);
+                $bonus= \Drupal::entityTypeManager()->getStorage('node')->load($bonus_node_id);
                 //Abo-Praemie
                 if ('' != Helper::getValue($bonus, 'field_warenid')) {
                     $export['partikelnr'] = Helper::getValue($bonus, 'field_warenid');
