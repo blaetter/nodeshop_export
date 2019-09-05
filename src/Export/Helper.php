@@ -317,8 +317,10 @@ class Helper
      */
     public static function getSalutation($value)
     {
-        if ($value == 'Herr' || $value == 'Frau') {
-            return $value;
+        if (false !== strpos($value, 'Frau')) {
+            return 'Frau';
+        } elseif (false !== strpos($value, 'Herr')) {
+            return 'Herr';
         } else {
             return '';
         }
@@ -334,8 +336,10 @@ class Helper
      */
     public static function getTitle($value)
     {
-        if ($value != 'Herr' && $value != 'Frau') {
-            return $value;
+        if (false !== strpos($value, 'Dr')) {
+            return 'Dr.';
+        } elseif (false !== strpos($value, 'Prof')) {
+            return 'Prof.';
         } else {
             return '';
         }
