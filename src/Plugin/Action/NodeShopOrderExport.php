@@ -53,7 +53,7 @@ class NodeShopOrderExport extends ActionBase
             $export['strasse']          = Helper::getValue($order, 'customer_street');
             $export['ort']              = Helper::getValue($order, 'customer_city');
             $export['adressmerkmal1']   = Helper::getValue($order, 'customer_street_addon');
-            $export['email']            = $order->getOwner()->getEmail();
+            $export['email']            = $order->getCustomerEmail();
             $export['rechnungsart']     = 4;
             //Abweichende Lieferadresse, falls
             $export['lanrede']          = Helper::getSalutation(Helper::getValue($order, 'delivery_title'));
