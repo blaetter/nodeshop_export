@@ -88,7 +88,7 @@ class NodeShopOrderExport extends ActionBase
                       // Preis: 1€: Art1
                       // Preis: 2€: Art2
                       // Preis: 3€: Art3
-                    $export['bartikelnummer'] = 'Art'.substr(Helper::getValue($node, 'field_warenid'), 0, 1);
+                    $export['bartikelnummer'] = 'Art'.substr(NodeShop::getPrice($node), 0, 1);
                 } elseif ('ausgabe' == $node->bundle()) {
                 // Preis 9,50 (neue Ausgaben): apart onl
                     if ('9.50' == NodeShop::getPrice($node)) {
