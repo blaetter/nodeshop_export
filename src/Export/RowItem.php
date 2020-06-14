@@ -51,7 +51,7 @@ class RowItem
         if ($this->validate()) {
             $this->value = trim($this->tempvalue).';';
         } else {
-            throw new Exception('Not a valid Value: '.$value.' for given key: '.$this->key);
+            throw new \Exception('Not a valid Value: '.$value.' for given key: '.$this->key);
         }
     }
 
@@ -59,7 +59,7 @@ class RowItem
      * Validates a single item
      *  based on the given information - e.g. the type of validation
      *
-     * @return
+     * @return bool
      *  Return value of called function
      */
     private function validate()
@@ -67,14 +67,11 @@ class RowItem
         switch ($this->type) {
             case 'custom':
                 return $this->validatecustom();
-            break;
             case 'int':
                 return $this->validateint();
-            break;
             case 'string':
             default:
                 return $this->validatestring();
-            break;
         }
     }
 
@@ -82,7 +79,7 @@ class RowItem
      * Validates a single item
      *  based on the given regular expression or a called user function
      *
-     * @return
+     * @return bool
      *  Boolean TRUE if item validates, false otherwise.
      *  Throws an exeption if no expression is given
      */
@@ -90,18 +87,18 @@ class RowItem
     {
         if (!empty($this->expression)) {
             if (!empty($this->validation) && function_exists($this->validation)) {
-                return $this->validation($this->expression, $this->tempvalue);
+                return call_user_func($this->validation, $this->expression, $this->tempvalue);
             } else {
                 return preg_match($this->expression, $this->tempvalue);
             }
         }
-        throw new Exception('Unknown Custom Validation format');
+        throw new \Exception('Unknown Custom Validation format');
     }
 
     /**
      * Validates a single integer item
      *
-     * @return
+     * @return bool
      *  Boolean TRUE if item validates, false otherwise.
      */
     private function validateint()
@@ -116,7 +113,7 @@ class RowItem
     /**
      * Validates a single string
      *
-     * @return
+     * @return bool
      *  Boolean TRUE if item validates, false otherwise.
      */
     private function validatestring()
@@ -131,7 +128,7 @@ class RowItem
     /**
      * Get a single row item
      *
-     * @return
+     * @return string
      *  The value of the item
      */
     public function get()

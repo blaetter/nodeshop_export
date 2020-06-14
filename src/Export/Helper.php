@@ -9,7 +9,7 @@ class Helper
     /**
      * This returns a value out of the order object if it is present
      *
-     * @param Order  $data A reference of the entity data
+     * @param Order  $entity A reference of the entity data
      * @param string $key  The key of the requested value
      *
      * @return mixed

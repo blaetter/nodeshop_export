@@ -40,7 +40,7 @@ class Export
     /**
      * Get the export object
      *
-     * @return
+     * @return self
      *  The export object
      */
     public function get()
