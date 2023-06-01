@@ -40,7 +40,7 @@ class Export
     /**
      * Get the export object
      *
-     * @return self
+     * @return array $export
      *  The export object
      */
     public function get()
