@@ -344,4 +344,25 @@ class Helper
             return '';
         }
     }
+
+    /**
+     * Prepares the payment method label for the export.
+     * We need to check for different payment methods and match them to
+     * either paypal or invoice. If there is anything other, return it as it might
+     * be a new payment method.
+     *
+     * @param string $label The incoming payment method label
+     * @return string
+     *  The pament method label, eiter invoice or paypal
+     */
+    public static function getPaymentLabel($label)
+    {
+        if (false !== strpos(strtolower($label), 'paypal')) {
+            return 'Paypal';
+        } elseif (false !== strpos(strtolower($label), 'invoice')) {
+            return 'invoice';
+        } else {
+            return $label;
+        }
+    }
 }

@@ -51,7 +51,7 @@ class RowItem
         if ($this->validate()) {
             $this->value = trim($this->tempvalue).';';
         } else {
-            throw new \Exception('Not a valid Value: '.$value.' for given key: '.$this->key);
+            throw new \Exception('Not a valid Value: '.$value.' (' . gettype($value) . ') for given key: '.$this->key);
         }
     }
 
@@ -97,6 +97,7 @@ class RowItem
 
     /**
      * Validates a single integer item
+     * we accept empty values as well, as theese might be optional
      *
      * @return bool
      *  Boolean TRUE if item validates, false otherwise.
@@ -106,7 +107,7 @@ class RowItem
         if (!empty($this->expression)) {
             return $this->validatecustom();
         } else {
-            return (is_int($this->tempvalue) || preg_match("/^\d+$/", $this->tempvalue));
+            return (is_int($this->tempvalue) || preg_match("/^\d+$/", $this->tempvalue) || empty($this->tempvalue));
         }
     }
 

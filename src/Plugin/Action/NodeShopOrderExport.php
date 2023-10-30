@@ -10,6 +10,8 @@ use Drupal\nodeshop\NodeShop;
 use Drupal\nodeshop_export\Export\Helper;
 use Drupal\nodeshop_export\Export\Export;
 use Drupal\Core\Messenger\MessengerTrait;
+use Drupal\Core\StringTranslation\StringTranslationTrait;
+use Drupal\Core\StringTranslation\TranslationInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 
@@ -25,6 +27,7 @@ use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 class NodeShopOrderExport extends ActionBase
 {
     use MessengerTrait;
+    use StringTranslationTrait;
 
     /**
      * Holds the export data
@@ -54,7 +57,7 @@ class NodeShopOrderExport extends ActionBase
             $export['ort']              = Helper::getValue($order, 'customer_city');
             $export['adressmerkmal1']   = Helper::getValue($order, 'customer_street_addon');
             $export['email']            = $order->getCustomerEmail();
-            $export['rechnungsart']     = 4;
+            $export['rechnungsart']     = Helper::getPaymentLabel($this->t($order->getPaymentMethodLabel())->__toString());
             //Abweichende Lieferadresse, falls
             $export['lanrede']          = Helper::getSalutation(Helper::getValue($order, 'delivery_title'));
             $export['ltitel']           = Helper::getTitle(Helper::getValue($order, 'delivery_title'));
@@ -109,51 +112,51 @@ class NodeShopOrderExport extends ActionBase
                 $export['bpreisnummer'] = Helper::getValue($node, 'field_preisnr');
                 $export['bbestelldatum'] = strftime("%Y%m%d", $order->get('changed')->value);
             }
-            $order_product_data = $order_product->getData()->getValue()[0];
-            if (isset($order_product_data['bonus']) && !empty($order_product_data['bonus'])) {
-                // if not an array, the bonus key only contains the node id of the bonus
-                if (!is_array($order_product_data['bonus'])) {
-                    $bonus_node_id = $order_product_data['bonus'];
-                } elseif (isset($order_product_data['bonus']['nid'])) {
-                    $bonus_node_id = $order_product_data['bonus']['nid'];
-                } else {
-                    continue;
-                }
-                $bonus= \Drupal::entityTypeManager()->getStorage('node')->load($bonus_node_id);
-                //Abo-Praemie
-                if ('' != Helper::getValue($bonus, 'field_warenid')) {
-                    $export['partikelnr'] = Helper::getValue($bonus, 'field_warenid');
-                }
+            // $order_product_data = $order_product->getData()->getValue()[0];
+            // if (isset($order_product_data['bonus']) && !empty($order_product_data['bonus'])) {
+            //     // if not an array, the bonus key only contains the node id of the bonus
+            //     if (!is_array($order_product_data['bonus'])) {
+            //         $bonus_node_id = $order_product_data['bonus'];
+            //     } elseif (isset($order_product_data['bonus']['nid'])) {
+            //         $bonus_node_id = $order_product_data['bonus']['nid'];
+            //     } else {
+            //         continue;
+            //     }
+            //     $bonus= \Drupal::entityTypeManager()->getStorage('node')->load($bonus_node_id);
+            //     //Abo-Praemie
+            //     if ('' != Helper::getValue($bonus, 'field_warenid')) {
+            //         $export['partikelnr'] = Helper::getValue($bonus, 'field_warenid');
+            //     }
 
-                if ($order->hasDeliveryAddress()) {
-                //praemienempfaenger an lieferadresse
-                    $export['panrede']          = Helper::getSalutation(Helper::getValue($order, 'delivery_title'));
-                    $export['ptitel']           = Helper::getTitle(Helper::getValue($order, 'delivery_title'));
-                    $export['pfamilienname']    = Helper::getValue($order, 'delivery_last_name');
-                    $export['pvorname']         = Helper::getValue($order, 'delivery_first_name');
-                    ;
-                    $export['pland']            = Helper::getCountryCode(Helper::getValue($order, 'delivery_country'));
-                    $export['pplz_strasse']     = Helper::getValue($order, 'delivery_postal_code');
-                    $export['pstrasse']         = Helper::getValue($order, 'delivery_street');
-                    $export['port']             = Helper::getValue($order, 'delivery_city');
-                    $export['padressmerkmal1']  = Helper::getValue($order, 'delivery_street_addon');
-                    $export['ppraemie'] = 2;
-                } else {
-                  //praemienempfaenger an rechnungsadresse
-                    $export['panrede']          = Helper::getSalutation(Helper::getValue($order, 'customer_title'));
-                    $export['ptitel']           = Helper::getTitle(Helper::getValue($order, 'customer_title'));
-                    $export['pfamilienname']    = Helper::getValue($order, 'customer_last_name');
-                    $export['pvorname']         = Helper::getValue($order, 'customer_first_name');
-                    ;
-                    $export['pland']            = Helper::getCountryCode(Helper::getValue($order, 'customer_country'));
-                    $export['pplz_strasse']     = Helper::getValue($order, 'customer_postal_code');
-                    $export['pstrasse']         = Helper::getValue($order, 'customer_street');
-                    $export['pstrasse']        .= ' '.Helper::getValue($order, 'customer_street_number');
-                    $export['port']             = Helper::getValue($order, 'customer_city');
-                    $export['padressmerkmal1']  = Helper::getValue($order, 'customer_street_addon');
-                    $export['ppraemie'] = 1;
-                }
-            }
+            //     if ($order->hasDeliveryAddress()) {
+            //     //praemienempfaenger an lieferadresse
+            //         $export['panrede']          = Helper::getSalutation(Helper::getValue($order, 'delivery_title'));
+            //         $export['ptitel']           = Helper::getTitle(Helper::getValue($order, 'delivery_title'));
+            //         $export['pfamilienname']    = Helper::getValue($order, 'delivery_last_name');
+            //         $export['pvorname']         = Helper::getValue($order, 'delivery_first_name');
+            //         ;
+            //         $export['pland']            = Helper::getCountryCode(Helper::getValue($order, 'delivery_country'));
+            //         $export['pplz_strasse']     = Helper::getValue($order, 'delivery_postal_code');
+            //         $export['pstrasse']         = Helper::getValue($order, 'delivery_street');
+            //         $export['port']             = Helper::getValue($order, 'delivery_city');
+            //         $export['padressmerkmal1']  = Helper::getValue($order, 'delivery_street_addon');
+            //         $export['ppraemie'] = 2;
+            //     } else {
+            //       //praemienempfaenger an rechnungsadresse
+            //         $export['panrede']          = Helper::getSalutation(Helper::getValue($order, 'customer_title'));
+            //         $export['ptitel']           = Helper::getTitle(Helper::getValue($order, 'customer_title'));
+            //         $export['pfamilienname']    = Helper::getValue($order, 'customer_last_name');
+            //         $export['pvorname']         = Helper::getValue($order, 'customer_first_name');
+            //         ;
+            //         $export['pland']            = Helper::getCountryCode(Helper::getValue($order, 'customer_country'));
+            //         $export['pplz_strasse']     = Helper::getValue($order, 'customer_postal_code');
+            //         $export['pstrasse']         = Helper::getValue($order, 'customer_street');
+            //         $export['pstrasse']        .= ' '.Helper::getValue($order, 'customer_street_number');
+            //         $export['port']             = Helper::getValue($order, 'customer_city');
+            //         $export['padressmerkmal1']  = Helper::getValue($order, 'customer_street_addon');
+            //         $export['ppraemie'] = 1;
+            //     }
+            // }
             $this->export_data[] = $export;
         }
     }
@@ -169,7 +172,7 @@ class NodeShopOrderExport extends ActionBase
 
         $export = new Export($this->export_data);
         $exportdata = $export->get();
-        $exportstring = implode("\r\n", $exportdata);
+        $exportstring = implode("\n", $exportdata);
 
         $response = new Response($exportstring);
 

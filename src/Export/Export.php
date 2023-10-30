@@ -31,6 +31,9 @@ class Export
      */
     private function create()
     {
+        // create header row with empty data array
+        $header = new Row([], true);
+        $this->export[] = $header->get();
         foreach ($this->data as $data) {
             $row = new Row($data);
             $this->export[] = $row->get();

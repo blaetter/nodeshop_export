@@ -3,6 +3,7 @@
 namespace Drupal\nodeshop_export\Export;
 
 use Drupal\nodeshop_export\Export\RowItem;
+use Drupal\nodeshop_export\Export\SkeletonItem;
 
 /**
  * Class lightshop export row
@@ -14,14 +15,16 @@ class Row
 
     private $data;
     private $skeleton;
+    private $header_only;
 
     // representation of the row
     private $row;
 
-    public function __construct($data)
+    public function __construct($data, $header_only = false)
     {
         $this->data = $data;
         $this->row = '';
+        $this->header_only = $header_only;
         $this->create();
     }
 
@@ -31,161 +34,261 @@ class Row
     private function create()
     {
         $this->skeleton = [
-            ['key' => 'adressnummer',            'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 6,    'type' => 'int'],
-            ['key' => 'anrede',                  'accessable' => true,   'validation' => '', 'expression' => '', 'length' => 20,   'type' => 'string'],
-            ['key' => 'titel',                   'accessable' => true,   'validation' => '', 'expression' => '', 'length' => 20,   'type' => 'string'],
-            ['key' => 'familienname',            'accessable' => true,   'validation' => '', 'expression' => '', 'length' => 30,   'type' => 'string'],
-            ['key' => 'vorname',                 'accessable' => true,   'validation' => '', 'expression' => '', 'length' => 30,   'type' => 'string'],
-            ['key' => 'namenszusatz1',           'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 35,   'type' => 'string'],
-            ['key' => 'namenszusatz2',           'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 35,   'type' => 'string'],
-            ['key' => 'land',                    'accessable' => true,   'validation' => '', 'expression' => '', 'length' => 2,    'type' => 'string'],
-            ['key' => 'plz_strasse',             'accessable' => true,   'validation' => '', 'expression' => '', 'length' => 6,    'type' => 'string'],
-            ['key' => 'plz_postfach',            'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 5,    'type' => 'string'],
-            ['key' => 'plz_grosskunde',          'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 5,    'type' => 'string'],
-            ['key' => 'leerstellen',             'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 4,    'type' => 'string'],
-            ['key' => 'strasse',                 'accessable' => true,   'validation' => '', 'expression' => '', 'length' => 35,   'type' => 'string'],
-            ['key' => 'ort',                     'accessable' => true,   'validation' => '', 'expression' => '', 'length' => 30,   'type' => 'string'],
-            ['key' => 'postfach',                'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 11,   'type' => 'string'],
-            ['key' => 'umsatzsteuerid',          'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 15,   'type' => 'string'],
-            ['key' => 'telefonvorwahl',          'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 10,   'type' => 'string'],
-            ['key' => 'telefon',                 'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 25,   'type' => 'string'],
-            ['key' => 'fax',                     'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 15,   'type' => 'string'],
-            ['key' => 'mobiltelefon',            'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 25,   'type' => 'string'],
-            ['key' => 'email',                   'accessable' => true,   'validation' => '', 'expression' => '', 'length' => 200,  'type' => 'string'],
-            ['key' => 'rechnungpermail',         'accessable' => true,   'validation' => '', 'expression' => '', 'length' => 1,    'type' => 'int'],
-            ['key' => 'bankname',                'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 25,   'type' => 'string'],
-            ['key' => 'blz',                     'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 8,    'type' => 'int'],
-            ['key' => 'kontonummer',             'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 11,    'type' => 'int'],
-            ['key' => 'kontoinhaber',            'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 20,   'type' => 'string'],
-            ['key' => 'iban',                    'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 34,   'type' => 'string'],
-            ['key' => 'swift',                   'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 11,   'type' => 'string'],
-            ['key' => 'rechnungsart',            'accessable' => true,   'validation' => '', 'expression' => '', 'length' => 2,    'type' => 'int'],
-            ['key' => 'kreditkartennummer',      'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 16,   'type' => 'int'],
-            ['key' => 'kreditkartebis',          'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 4,    'type' => 'int'],
-            ['key' => 'kreditkartepruefziffer',  'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 4,    'type' => 'int'],
-            ['key' => 'fremdsprache',            'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 1,    'type' => 'int'],
-            ['key' => 'fremdwaehrung',           'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 3,    'type' => 'string'],
-            ['key' => 'geburtsdatum',            'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 8,    'type' => 'int'],
-            ['key' => 'kundengruppe',            'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 2,    'type' => 'string'],
-            ['key' => 'kundenrabatt',            'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 5,    'type' => 'string'],
-            ['key' => 'passwort',                'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 15,   'type' => 'string'],
-            ['key' => 'adressmerkmal1',          'accessable' => true,   'validation' => '', 'expression' => '', 'length' => 45,   'type' => 'string'],
-            ['key' => 'adressmerkmal2',          'accessable' => true,   'validation' => '', 'expression' => '', 'length' => 45,   'type' => 'string'],
-            ['key' => 'adressmerkmal3',          'accessable' => true,   'validation' => '', 'expression' => '', 'length' => 45,   'type' => 'string'],
-            ['key' => 'adressmerkmal4',          'accessable' => true,   'validation' => '', 'expression' => '', 'length' => 45,   'type' => 'string'],
-            ['key' => 'adressmerkmal5',          'accessable' => true,   'validation' => '', 'expression' => '', 'length' => 45,   'type' => 'string'],
-            ['key' => 'adressmerkmal6',          'accessable' => true,   'validation' => '', 'expression' => '', 'length' => 45,   'type' => 'string'],
-            ['key' => 'adressmerkmal7',          'accessable' => true,   'validation' => '', 'expression' => '', 'length' => 45,   'type' => 'string'],
-            ['key' => 'adressmerkmal8',          'accessable' => true,   'validation' => '', 'expression' => '', 'length' => 45,   'type' => 'string'],
-            ['key' => 'adressmerkmal9',          'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 45,   'type' => 'string'],
-            ['key' => 'adressmerkmal10',         'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 45,   'type' => 'string'],
-            ['key' => 'kennzeichen1',            'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 1,    'type' => 'string'],
-            ['key' => 'kennzeichen2',            'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 1,    'type' => 'string'],
-            ['key' => 'kennzeichen3',            'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 1,    'type' => 'string'],
-            ['key' => 'kennzeichen4',            'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 1,    'type' => 'string'],
-            ['key' => 'kennzeichen5',            'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 1,    'type' => 'string'],
-            ['key' => 'kennzeichen6',            'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 1,    'type' => 'string'],
-            ['key' => 'kennzeichen7',            'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 1,    'type' => 'string'],
-            ['key' => 'kennzeichen8',            'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 1,    'type' => 'string'],
-            ['key' => 'kennzeichen9',            'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 1,    'type' => 'string'],
-            ['key' => 'leerstellen',             'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 5,    'type' => 'string'],
+            new SkeletonItem('adressnummer', 'Adressnummer', false, '', '', 6, 'int'),
+            new SkeletonItem('anrede', 'Anrede', true, '', '', 20, 'string'),
+            new SkeletonItem('titel', 'Titel', true, '', '', 20, 'string'),
+            new SkeletonItem('familienname', 'Familienname', true, '', '', 30, 'string'),
+            new SkeletonItem('vorname', 'Vorname', true, '', '', 35, 'string'),
+            //new SkeletonItem('namenszusatz1', '', false, '', '', 35, 'string'),
+            //new SkeletonItem('namenszusatz2', '', false, '', '', 35, 'string'),
+            // Neu in aktuellem Export: Firma 1 - 3
+            // new SkeletonItem('firma_1', 'Firma 1', false, '', '', 35, 'string'),
+            // new SkeletonItem('firma_2', 'Firma 2', false, '', '', 35, 'string'),
+            // new SkeletonItem('firma_3', 'Firma 3', false, '', '', 35, 'string'),
+            new SkeletonItem('land', 'Land ISO', true, '', '', 2, 'string'),
+            new SkeletonItem('plz_strasse', 'Str.Plz', true, '', '', 6, 'string'),
+            new SkeletonItem('plz_postfach', 'Pf.Plz', false, '', '', 5, 'string'),
+            new SkeletonItem('plz_grosskunde', 'Großkd.Plz', false, '', '', 5, 'string'),
+            //new SkeletonItem('leerstellen', '', false, '', '', 4, 'string'),
+            new SkeletonItem('strasse', 'Straße', true, '', '', 35, 'string'),
+            // Neu in aktuellem Export: Hausnummer
+            //new SkeletonItem('hausnummer', 'Hausnummer', true, '', '', 10, 'string'),
+            new SkeletonItem('ort', 'Ort', true, '', '', 30, 'string'),
+            new SkeletonItem('postfach', 'Postfach', false, '', '', 11, 'string'),
+            new SkeletonItem('umsatzsteuerid', 'Ust-IdNr', false, '', '', 15, 'string'),
+            new SkeletonItem('telefonvorwahl', 'Telefon', false, '', '', 10, 'string'),
+            new SkeletonItem('telefon', 'Telefon2', false, '', '', 25, 'string'),
+            //new SkeletonItem('fax', '', false, '', '', 15, 'string'),
+            new SkeletonItem('mobiltelefon', 'Handy', false, '', '', 25, 'string'),
+            new SkeletonItem('email', 'E-Mail', true, '', '', 200, 'string'),
+            //new SkeletonItem('rechnungpermail', '', true, '', '', 1, 'int'),
+            // new SkeletonItem('bankname', '', false, '', '', 25, 'string'),
+            // new SkeletonItem('blz', '', false, '', '', 8, 'int'),
+            // new SkeletonItem('kontonummer', '', false, '', '', 11, 'int'),
+            // new SkeletonItem('kontoinhaber', '', false, '', '', 20, 'string'),
+            // Neu in aktuellem Export: Zahlungsweg und PayPalCode
+            // new SkeletonItem('rechnungsart', 'Zahlungsweg', true, '', '', 34, 'string'),
+            // new SkeletonItem('paypalcode', 'PayPalCode', false, '', '', 34, 'string'),
+            new SkeletonItem('iban', 'IBAN', false, '', '', 34, 'string'),
+            // Neu in aktuellem Export: BIC
+            //new SkeletonItem('bic', 'BIC', false, '', '', 34, 'string'),
+           // new SkeletonItem('swift', '', false, '', '', 11, 'string'),
+            new SkeletonItem('rechnungsart', 'Zahlungsweg', true, '', '', 32, 'string'),
+            // new SkeletonItem('kreditkartennummer', '', false, '', '', 16, 'int'),
+            // new SkeletonItem('kreditkartebis', '', false, '', '', 4, 'int'),
+            // new SkeletonItem('kreditkartepruefziffer', '', false, '', '', 4, 'int'),
+            // Neu in aktuellem Export: Mandatsreferenz und -Datum
+            //new SkeletonItem('mandatsreferenz', 'Mandatsreferenz', false, '', '', 1, 'int'),
+            //new SkeletonItem('mandatsdatum', 'Mandatsdatum', false, '', '', 1, 'int'),
+            new SkeletonItem('fremdsprache', 'Fremdsprache', false, '', '', 1, 'int'),
+            new SkeletonItem('fremdwaehrung', 'Fremdwährung', false, '', '', 3, 'string'),
+            new SkeletonItem('geburtsdatum', 'Datum JJJJMMTT', false, '', '', 8, 'int'),
+            new SkeletonItem('kundengruppe', 'Kundengruppe', false, '', '', 2, 'string'),
+            new SkeletonItem('kundenrabatt', 'Kundenrabatt %', false, '', '', 5, 'string'),
+            //new SkeletonItem('passwort', '', false, '', '', 15, 'string'),
+            // Neu in aktuellem Export: Shop-ID und Schulnummer
+            //new SkeletonItem('shop-id', 'Shop-ID %', false, '', '', 5, 'string'),
+            //new SkeletonItem('schulnummer', 'Schulnummer %', false, '', '', 5, 'string'),
+            new SkeletonItem('adressmerkmal1', 'Adr.Merkmal 1', true, '', '', 45, 'string'),
+            new SkeletonItem('adressmerkmal2', 'Adr.Merkmal 2', false, '', '', 45, 'string'),
+            new SkeletonItem('adressmerkmal3', 'Adr.Merkmal 3', false, '', '', 45, 'string'),
+            new SkeletonItem('adressmerkmal4', 'Adr.Merkmal 4', false, '', '', 45, 'string'),
+            new SkeletonItem('adressmerkmal5', 'Adr.Merkmal 5', false, '', '', 45, 'string'),
+            new SkeletonItem('adressmerkmal6', 'Adr.Merkmal 6', false, '', '', 45, 'string'),
+            new SkeletonItem('adressmerkmal7', 'Adr.Merkmal 7', false, '', '', 45, 'string'),
+            new SkeletonItem('adressmerkmal8', 'Adr.Merkmal 8', false, '', '', 45, 'string'),
+            new SkeletonItem('adressmerkmal9', 'Adr.Merkmal 9', false, '', '', 45, 'string'),
+            new SkeletonItem('adressmerkmal10', 'Adr.Merkmal 10', false, '', '', 45, 'string'),
+            new SkeletonItem('kennzeichen1', 'Kennzeichen 1', false, '', '', 1, 'string'),
+            new SkeletonItem('kennzeichen2', 'Kennzeichen 2', false, '', '', 1, 'string'),
+            new SkeletonItem('kennzeichen3', 'Kennzeichen 3', false, '', '', 1, 'string'),
+            new SkeletonItem('kennzeichen4', 'Kennzeichen 4', false, '', '', 1, 'string'),
+            new SkeletonItem('kennzeichen5', 'Kennzeichen 5', false, '', '', 1, 'string'),
+            new SkeletonItem('kennzeichen6', 'Kennzeichen 6', false, '', '', 1, 'string'),
+            new SkeletonItem('kennzeichen7', 'Kennzeichen 7', false, '', '', 1, 'string'),
+            new SkeletonItem('kennzeichen8', 'Kennzeichen 8', false, '', '', 1, 'string'),
+            new SkeletonItem('kennzeichen9', 'Kennzeichen 9', false, '', '', 1, 'string'),
+            // new SkeletonItem('leerstellen', 'Kennzeichen 10', false, '', '', 5, 'string'),
+            // Neu in aktuellem Export: Zahlungsziel
+            //new SkeletonItem('zahlungsziel', 'Zahlungsziel', false, '', '', 10, 'string'),
             //Abweichende Lieferadresse, falls
-            ['key' => 'ladressnummer',           'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 6,    'type' => 'int'],
-            ['key' => 'lanrede',                 'accessable' => true,   'validation' => '', 'expression' => '', 'length' => 20,   'type' => 'string'],
-            ['key' => 'ltitel',                  'accessable' => true,   'validation' => '', 'expression' => '', 'length' => 20,   'type' => 'string'],
-            ['key' => 'lfamilienname',           'accessable' => true,   'validation' => '', 'expression' => '', 'length' => 30,   'type' => 'string'],
-            ['key' => 'lvorname',                'accessable' => true,   'validation' => '', 'expression' => '', 'length' => 30,   'type' => 'string'],
-            ['key' => 'lnamenszusatz1',          'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 35,   'type' => 'string'],
-            ['key' => 'lnamenszusatz2',          'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 35,   'type' => 'string'],
-            ['key' => 'lland',                   'accessable' => true,   'validation' => '', 'expression' => '', 'length' => 2,    'type' => 'string'],
-            ['key' => 'lplz_strasse',            'accessable' => true,   'validation' => '', 'expression' => '', 'length' => 6,    'type' => 'string'],
-            ['key' => 'lplz_postfach',           'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 5,    'type' => 'string'],
-            ['key' => 'lplz_grosskunde',         'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 5,    'type' => 'string'],
-            ['key' => 'lleerstellen',            'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 4,    'type' => 'string'],
-            ['key' => 'lstrasse',                'accessable' => true,   'validation' => '', 'expression' => '', 'length' => 35,   'type' => 'string'],
-            ['key' => 'lort',                    'accessable' => true,   'validation' => '', 'expression' => '', 'length' => 30,   'type' => 'string'],
-            ['key' => 'lpostfach',               'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 11,   'type' => 'string'],
-            ['key' => 'lerstelellen',            'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 1,    'type' => 'string'],
+            new SkeletonItem('ladressnummer', 'LA-Adr.Nummer', false, '', '', 6, 'int'),
+            new SkeletonItem('lanrede', 'LA-Anrede', true, '', '', 20, 'string'),
+            new SkeletonItem('ltitel', 'LA-Titel', true, '', '', 20, 'string'),
+            new SkeletonItem('lfamilienname', 'LA-Familienname', true, '', '', 30, 'string'),
+            new SkeletonItem('lvorname', 'LA-Vorname', true, '', '', 30, 'string'),
+            // new SkeletonItem('lnamenszusatz1', '', false, '', '', 35, 'string'),
+            // new SkeletonItem('lnamenszusatz2', '', false, '', '', 35, 'string'),
+            // Neu im aktuellen Export: LA-Firma 1 - 3
+            // new SkeletonItem('lfirma_1', 'LA-Firma 1', false, '', '', 35, 'string'),
+            // new SkeletonItem('lfirma_2', 'LA-Firma 2', false, '', '', 35, 'string'),
+            // new SkeletonItem('lfirma_3', 'LA-Firma 3', false, '', '', 35, 'string'),
+            new SkeletonItem('lland', 'LA-Land ISO', true, '', '', 2, 'string'),
+            new SkeletonItem('lplz_strasse', 'LA-Str.Plz', true, '', '', 6, 'string'),
+            new SkeletonItem('lplz_postfach', 'LA-Pf.Plz', false, '', '', 5, 'string'),
+            new SkeletonItem('lplz_grosskunde', 'LA-Grosskd.Plz', false, '', '', 5, 'string'),
+            // new SkeletonItem('lleerstellen', '', false, '', '', 4, 'string'),
+            new SkeletonItem('lstrasse', 'LA-Straße', true, '', '', 35, 'string'),
+            // Neu in aktuellem Export: LA Hausnummer und LA Hausnummernzusatz
+            //new SkeletonItem('lhausnummer', 'LA-Hausnummer', true, '', '', 35, 'string'),
+            //new SkeletonItem('lhausnummerzusatz', 'LA-Hausnummerzusatz', true, '', '', 35, 'string'),
+            new SkeletonItem('lort', 'LA-Ort', true, '', '', 30, 'string'),
+            new SkeletonItem('lpostfach', 'LA-Postfach', false, '', '', 11, 'string'),
+            // Neu in aktuellem Export: LA-Shop-OF, LA-Telefon, LA-Telefon2, LA-Handy, LA-E-Mail
+            //new SkeletonItem('shop-id', 'LA-Shop-ID %', false, '', '', 5, 'string'),
+            //new SkeletonItem('ltelefonvorwahl', 'LA-Telefon', false, '', '', 10, 'string'),
+            //new SkeletonItem('ltelefon', 'LA-Telefon2', false, '', '', 25, 'string'),
+            //new SkeletonItem('lmobiltelefon', 'LA-Handy', false, '', '', 25, 'string'),
+            //new SkeletonItem('lemail', 'LA-E-Mail', false, '', '', 200, 'string'),
+            // new SkeletonItem('leerstelellen', '', false, '', '', 1, 'string'),
             //Bestellungen buecher
-            ['key' => 'bartikelnummer',          'accessable' => true,   'validation' => '', 'expression' => '', 'length' => 10,   'type' => 'string'],
-            ['key' => 'bmenge',                  'accessable' => true,   'validation' => '', 'expression' => '', 'length' => 4,    'type' => 'int'],
-            ['key' => 'bbestellzeichen',         'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 10,   'type' => 'string'],
-            ['key' => 'bbestelldatum',           'accessable' => true,   'validation' => '', 'expression' => '', 'length' => 8,    'type' => 'int'],
-            ['key' => 'bversandkosten_fix',      'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 6,    'type' => 'int'],
-            ['key' => 'bversandkostenjn',        'accessable' => true,   'validation' => '', 'expression' => '', 'length' => 1,    'type' => 'string'],
-            ['key' => 'einzelpreis',             'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 9,    'type' => 'int'],
-            ['key' => 'posten_rabatt',           'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 4,    'type' => 'int'],
-            ['key' => 'ausgangslage_nr',         'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 6,    'type' => 'int'],
-            ['key' => 'eillieferung',            'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 1,    'type' => 'string'],
-            ['key' => 'lerstelellen',            'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 1,    'type' => 'string'],
+            new SkeletonItem('bartikelnummer', 'Artikelnummer', true, '', '', 10, 'string'),
+            new SkeletonItem('bmenge', 'Bestellmenge', true, '', '', 4, 'int'),
+            // Neu in aktuellem Export: Liefermenge und Dauerauftrag
+            //new SkeletonItem('bliefermenge', 'Liefermenge', false, '', '', 4, 'int'),
+            //new SkeletonItem('bdauerauftrag', 'Dauerauftrag', false, '', '', 1, 'int'),
+            new SkeletonItem('bbestellzeichen', 'Bestellzeichen', false, '', '', 10, 'string'),
+            new SkeletonItem('bbestelldatum', 'Bestelldatum JJJJMMTT', true, '', '', 8, 'int'),
+            new SkeletonItem('bversandkosten_fix', 'Versandkosten fix', false, '', '', 6, 'int'),
+            // Neu in aktuellem Export: BuchRechnung per E-Mail
+            //new SkeletonItem('brechnung_mail', 'BuchRechnung per E-Mail', false, '', '', 1, 'int'),
+            new SkeletonItem('bversandkostenjn', 'Versandkosten J/N', true, '', '', 1, 'string'),
+            new SkeletonItem('einzelpreis', 'Einzelpreis', false, '', '', 9, 'int'),
+            new SkeletonItem('posten_rabatt', 'Posten Rabatt %', false, '', '', 4, 'int'),
+            //new SkeletonItem('ausgangslage_nr', '', false, '', '', 6, 'int'),
+            new SkeletonItem('eillieferung', 'Eillieferung', false, '', '', 1, 'string'),
+            // new SkeletonItem('leerstelellen', '', false, '', '', 1, 'string'),
             //Bestellungen abo
-            ['key' => 'bzeitschriftnr',          'accessable' => true,   'validation' => '', 'expression' => '', 'length' => 2,    'type' => 'int'],
-            ['key' => 'banzahl_zahlen',          'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 5,    'type' => 'int'],
-            ['key' => 'banzahl_kostenlos',       'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 5,    'type' => 'int'],
-            ['key' => 'bpreisnummer',            'accessable' => true,   'validation' => '', 'expression' => '', 'length' => 2,    'type' => 'int'],
-            ['key' => 'blieferung_ab_ausgabe',   'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 3,    'type' => 'int'],
-            ['key' => 'blieferung_ab_jahr',      'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 2,    'type' => 'int'],
-            ['key' => 'blieferung_bis_ausg',     'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 3,    'type' => 'int'],
-            ['key' => 'blieferung_bis_jahr',     'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 2,    'type' => 'int'],
-            ['key' => 'brabatt',                 'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 4,    'type' => 'int'],
-            ['key' => 'babbuchung_jn',           'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 1,    'type' => 'string'],
-            ['key' => 'bskonto',                 'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 3,    'type' => 'int'],
-            ['key' => 'brechnung_bei_abbuch',    'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 1,    'type' => 'string'],
-            ['key' => 'banzahl_probe',           'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 3,    'type' => 'int'],
-            ['key' => 'bprobeabo_preisnr',       'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 2,    'type' => 'int'],
-            ['key' => 'brechnung_alle_x_ausg',   'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 2,    'type' => 'int'],
-            ['key' => 'bversandkosten_ind',      'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 8,    'type' => 'int'],
-            ['key' => 'babo1',                   'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 10,   'type' => 'string'],
-            ['key' => 'babo2',                   'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 10,   'type' => 'string'],
-            ['key' => 'bivw',                    'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 2,    'type' => 'int'],
-            ['key' => 'bherkunft_abo',           'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 10,   'type' => 'string'],
-            ['key' => 'bbestellzeichen',         'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 50,   'type' => 'string'],
+            // Neu in aktuellem Export: Abo-Nummer
+            //new SkeletonItem('babonummer', 'Abo Nummer', false, '', '', 10, 'string'),
+            new SkeletonItem('bzeitschriftnr', 'Zeitschrift Nummer', true, '', '', 2, 'int'),
+            new SkeletonItem('banzahl_zahlen', 'Exemplare zu zahlen', false, '', '', 5, 'int'),
+            new SkeletonItem('banzahl_kostenlos', 'Exemplare kostenlos', false, '', '', 5, 'int'),
+            new SkeletonItem('bpreisnummer', 'Preisnummer', true, '', '', 2, 'int'),
+            // Neu in aktuellem Export: Lieferung ab akt Ausgabe
+            //new SkeletonItem('blieferung_ab_akt_ausgabe', 'Lieferung ab akt Ausgabe', false, '', '', 3, 'int'),
+            new SkeletonItem('blieferung_ab_ausgabe', 'Lieferung ab Ausgabe', false, '', '', 3, 'int'),
+            new SkeletonItem('blieferung_ab_jahr', 'Lieferung ab Jahr', false, '', '', 2, 'int'),
+            new SkeletonItem('blieferung_bis_ausg', 'Lieferung bis Ausgabe', false, '', '', 3, 'int'),
+            new SkeletonItem('blieferung_bis_jahr', 'Lieferung bis Jahr', false, '', '', 2, 'int'),
+            // Neu in aktuellem Export: Anzahl Ausgaben, Nächste Rechnung Ausgabe, Nächste Rechnung Jahr
+            //new SkeletonItem('banzahl_ausgaben', 'Anzahl Ausgaben', false, '', '', 4, 'int'),
+            //new SkeletonItem('bnaechste_rechnung', 'Nächste Rechnung', false, '', '', 8, 'int'),
+            //new SkeletonItem('bnaechste_rechnung_jahr', 'Nächste Rechnung Jahr', false, '', '', 4, 'int'),
+            new SkeletonItem('brabatt', 'Rabatt %', false, '', '', 4, 'int'),
+            // Neu in aktuellem Export: AboRechnung per E-Mail
+            //new SkeletonItem('baborechnung_mail', 'AboRechnung per E-Mail', false, '', '', 1, 'int'),
+            // new SkeletonItem('babbuchung_jn', '', false, '', '', 1, 'string'),
+            // new SkeletonItem('bskonto', '', false, '', '', 3, 'int'),
+            new SkeletonItem('brechnung_bei_abbuch', 'Rechnung bei Lastschrift-Einzug J/N', false, '', '', 1, 'string'),
+            new SkeletonItem('banzahl_probe', 'Probeabo Ausgaben', false, '', '', 3, 'int'),
+            new SkeletonItem('bprobeabo_preisnr', 'Probeabo Preisnummer', false, '', '', 2, 'int'),
+            new SkeletonItem('brechnung_alle_x_ausg', 'Rechnung alle Ausgaben', false, '', '', 2, 'int'),
+            // Neu in aktuellem Export: Quartalszahlweise
+            //new SkeletonItem('bquartalszahlweise', 'Quartalszahlweise', false, '', '', 1, 'int'),
+            new SkeletonItem('bversandkosten_ind', 'Abo Versandkosten', false, '', '', 8, 'int'),
+            new SkeletonItem('babo1', 'Abo-Art1', false, '', '', 10, 'string'),
+            new SkeletonItem('babo2', 'Abo-Art2', false, '', '', 10, 'string'),
+            // Neu in aktuellem Export: Abo-Art3
+            //new SkeletonItem('babo3', 'Abo-Art3', false, '', '', 10, 'string'),
+            new SkeletonItem('bivw', 'IVW Meldeformular Feldnummer', false, '', '', 2, 'int'),
+            new SkeletonItem('bherkunft_abo', 'Herkunft des Abos', false, '', '', 10, 'string'),
+            new SkeletonItem('bbestellzeichen', 'Abo Bestellzeichen', false, '', '', 50, 'string'),
+            // Neu in aktuellem Export: Abo Bemerkungen
+            //new SkeletonItem('bbemerkungen', 'Abo Bemerkungen', false, '', '', 100, 'string'),
             //Abo-Praemie
-            ['key' => 'partikelnr',              'accessable' => true,   'validation' => '', 'expression' => '', 'length' => 10,   'type' => 'string'],
-            ['key' => 'pzuzahlung',              'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 6,    'type' => 'int'],
-            ['key' => 'pnachzahlung',            'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 1,    'type' => 'int'],
+            new SkeletonItem('partikelnr', 'Prämie-Artikel', false, '', '', 10, 'string'),
+            new SkeletonItem('pzuzahlung', 'Prämien Zuzahlung', false, '', '', 6, 'int'),
+            new SkeletonItem('pnachzahlung', 'Prämie nach Abo Zahlung versenden', false, '', '', 1, 'int'),
             //praemienempfaenger
-            ['key' => 'padressnr',               'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 6,    'type' => 'int'],
-            ['key' => 'panrede',                 'accessable' => true,   'validation' => '', 'expression' => '', 'length' => 20,   'type' => 'string'],
-            ['key' => 'ptitel',                  'accessable' => true,   'validation' => '', 'expression' => '', 'length' => 20,   'type' => 'string'],
-            ['key' => 'pfamilienname',           'accessable' => true,   'validation' => '', 'expression' => '', 'length' => 30,   'type' => 'string'],
-            ['key' => 'pvorname',                'accessable' => true,   'validation' => '', 'expression' => '', 'length' => 30,   'type' => 'string'],
-            ['key' => 'pnamenszusatz1',          'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 35,   'type' => 'string'],
-            ['key' => 'pnamenszusatz2',          'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 35,   'type' => 'string'],
-            ['key' => 'pland',                   'accessable' => true,   'validation' => '', 'expression' => '', 'length' => 2,    'type' => 'string'],
-            ['key' => 'pplz_strasse',            'accessable' => true,   'validation' => '', 'expression' => '', 'length' => 6,    'type' => 'string'],
-            ['key' => 'pstrasse',                'accessable' => true,   'validation' => '', 'expression' => '', 'length' => 35,   'type' => 'string'],
-            ['key' => 'port',                    'accessable' => true,   'validation' => '', 'expression' => '', 'length' => 30,   'type' => 'string'],
-            ['key' => 'panadresse',              'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 1,    'type' => 'int'],
-            ['key' => 'pkostenlos',              'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 1,    'type' => 'string'],
-            ['key' => 'versandkosten',           'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 6,    'type' => 'int'],
+            new SkeletonItem('padressnr', 'Prämienempf. Adressnummer', false, '', '', 6, 'int'),
+            new SkeletonItem('panrede', 'Prämienempf. Anrede', false, '', '', 20, 'string'),
+            new SkeletonItem('ptitel', 'Prämienempf. Titel', false, '', '', 20, 'string'),
+            new SkeletonItem('pfamilienname', 'Prämienempf. Familienname', false, '', '', 30, 'string'),
+            new SkeletonItem('pvorname', '', false, 'Prämienempf. Vorname', '', 30, 'string'),
+            // new SkeletonItem('pnamenszusatz1', '', false, '', '', 35, 'string'),
+            // new SkeletonItem('pnamenszusatz2', '', false, '', '', 35, 'string'),
+            // Neu im aktuellen Export: Prämienempf.-Firma 1 - 3
+            // new SkeletonItem('pfirma_1', 'Prämienempf. Firma 1', false, '', '', 35, 'string'),
+            // new SkeletonItem('pfirma_2', 'Prämienempf. Firma 2', false, '', '', 35, 'string'),
+            // new SkeletonItem('pfirma_3', 'Prämienempf. Firma 3', false, '', '', 35, 'string'),
+            new SkeletonItem('pland', 'Prämienempf. Land ISO', false, '', '', 2, 'string'),
+            new SkeletonItem('pplz_strasse', 'Prämienempf. Plz Straße', false, '', '', 6, 'string'),
+            new SkeletonItem('pstrasse', 'Prämienempf. Straße', false, '', '', 35, 'string'),
+            // Neu in aktuellem Export: Prämienempf. Hausnummer und Prämienempf. Hausnummernzusatz
+            //new SkeletonItem('phausnummer', 'Prämienempf. Hausnummer', true, '', '', 35, 'string'),
+            //new SkeletonItem('phausnummerzusatz', 'Prämienempf. Hausnummerzusatz', true, '', '', 35, 'string'),
+            new SkeletonItem('port', 'Prämienempf. Ort', false, '', '', 30, 'string'),
+            new SkeletonItem('panadresse', 'Prämiene an Adresse', false, '', '', 1, 'int'),
+            new SkeletonItem('pkostenlos', 'Prämie kostenlos', false, '', '', 1, 'string'),
+            new SkeletonItem('versandkosten', 'Prämieversandkosten', false, '', '', 6, 'int'),
             //Adressinfos und Zusatzfelder
-            ['key' => 'feld1',           'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 26,    'type' => 'string'],
-            ['key' => 'feld2',           'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 26,    'type' => 'string'],
-            ['key' => 'feld3',           'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 26,    'type' => 'string'],
-            ['key' => 'feld4',           'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 26,    'type' => 'string'],
-            ['key' => 'feld5',           'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 26,    'type' => 'string'],
-            ['key' => 'feld6',           'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 26,    'type' => 'string'],
-            ['key' => 'feld7',           'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 26,    'type' => 'string'],
-            ['key' => 'feld8',           'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 26,    'type' => 'string'],
-            ['key' => 'feld9',           'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 26,    'type' => 'string'],
-            ['key' => 'feld10',          'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 26,    'type' => 'string'],
-            ['key' => 'feld11',          'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 26,    'type' => 'string'],
-            ['key' => 'feld12',          'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 26,    'type' => 'string'],
-            ['key' => 'feld13',          'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 26,    'type' => 'string'],
-            ['key' => 'feld14',          'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 26,    'type' => 'string'],
-            ['key' => 'feld15',          'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 26,    'type' => 'string'],
-            ['key' => 'feld16',          'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 26,    'type' => 'string'],
-            ['key' => 'text1',           'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 76,    'type' => 'string'],
-            ['key' => 'text2',           'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 76,    'type' => 'string'],
-            ['key' => 'text3',           'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 76,    'type' => 'string'],
-            ['key' => 'text4',           'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 76,    'type' => 'string'],
-            ['key' => 'text5',           'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 76,    'type' => 'string'],
-            ['key' => 'text6',           'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 76,    'type' => 'string'],
-            ['key' => 'text7',           'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 76,    'type' => 'string'],
-            ['key' => 'text8',           'accessable' => false,  'validation' => '', 'expression' => '', 'length' => 76,    'type' => 'string'],
+            new SkeletonItem('feld1', 'Adr.Info 1', false, '', '', 26, 'string'),
+            new SkeletonItem('feld2', 'Adr.Info 2', false, '', '', 26, 'string'),
+            new SkeletonItem('feld3', 'Adr.Info 3', false, '', '', 26, 'string'),
+            new SkeletonItem('feld4', 'Adr.Info 4', false, '', '', 26, 'string'),
+            new SkeletonItem('feld5', 'Adr.Info 5', false, '', '', 26, 'string'),
+            new SkeletonItem('feld6', 'Adr.Info 6', false, '', '', 26, 'string'),
+            new SkeletonItem('feld7', 'Adr.Info 7', false, '', '', 26, 'string'),
+            new SkeletonItem('feld8', 'Adr.Info 8', false, '', '', 26, 'string'),
+            new SkeletonItem('feld9', 'Adr.Info 9', false, '', '', 26, 'string'),
+            new SkeletonItem('feld10', 'Adr.Info 10', false, '', '', 26, 'string'),
+            new SkeletonItem('feld11', 'Adr.Info 11', false, '', '', 26, 'string'),
+            new SkeletonItem('feld12', 'Adr.Info 12', false, '', '', 26, 'string'),
+            new SkeletonItem('feld13', 'Adr.Info 13', false, '', '', 26, 'string'),
+            new SkeletonItem('feld14', 'Adr.Info 14', false, '', '', 26, 'string'),
+            new SkeletonItem('feld15', 'Adr.Info 15', false, '', '', 26, 'string'),
+            new SkeletonItem('feld16', 'Adr.Info 16', false, '', '', 26, 'string'),
+            // new SkeletonItem('text1', '', false, '', '', 76, 'string'),
+            // new SkeletonItem('text2', '', false, '', '', 76, 'string'),
+            // new SkeletonItem('text3', '', false, '', '', 76, 'string'),
+            // new SkeletonItem('text4', '', false, '', '', 76, 'string'),
+            // new SkeletonItem('text5', '', false, '', '', 76, 'string'),
+            // new SkeletonItem('text6', '', false, '', '', 76, 'string'),
+            // new SkeletonItem('text7', '', false, '', '', 76, 'string'),
+            // new SkeletonItem('text8', '', false, '', '', 76, 'string'),
         ];
-        $this->set();
+
+        if (true == $this->header_only) {
+            $this->header();
+        } else {
+            $this->set();
+        }
+    }
+
+    /**
+     * Sets the header row if requested
+     *
+     * @return void
+     */
+    private function header()
+    {
+        foreach ($this->skeleton as $field) {
+          // we prepare the header row with the same methods as the rows of
+          // content and are using the same skeletonItems as for the content.
+          // To make validation work, we set some values manually because
+          // the header row only contains strings.
+          $item = new RowItem(
+              $field->key,
+              128, // max length
+              'string', // type
+              $field->validation,
+              $field->expression
+          );
+          try {
+              // We need to check if item is accessable so we get only
+              // headers with content in the header_row.
+              // We need to set encoding to ASCII here for some reasons....
+              // and we use the csv_title from the skeleton here as we
+              // build the header row.
+              if (false != $field->accessable) {
+                $item->set($field->csv_title);
+                $this->row .= $item->get();
+              }
+          } catch (\Exception $e) {
+              echo 'Exception abgefangen header: ',  $e->getMessage(), "\n";
+          }
+        }
     }
 
     /**
@@ -197,25 +300,25 @@ class Row
     {
         $count = 1;
         foreach ($this->skeleton as $field) {
-            $item = new RowItem(
-                $field['key'],
-                $field['length'],
-                $field['type'],
-                $field['validation'],
-                $field['expression']
-            );
-            try {
-                if (false != $field['accessable']
-                    && isset($this->data[$field['key']])
-                    && !empty($this->data[$field['key']])
-                ) {
-                //We need to set encoding to ASCII here for some reasons....
-                    $item->set(mb_convert_encoding($this->data[$field['key']], 'latin1'));
-                }
-            } catch (\Exception $e) {
-                echo 'Exception abgefangen: ',  $e->getMessage(), "\n";
-            }
-            $this->row .= $item->get();
+          $item = new RowItem(
+              $field->key,
+              $field->length,
+              $field->type,
+              $field->validation,
+              $field->expression
+          );
+          try {
+              if (false != $field->accessable) {
+                  $value_to_set = $this->data[$field->key];
+                  if (empty($value_to_set)) {
+                      $value_to_set = '';
+                  }
+                  $item->set($value_to_set);
+                  $this->row .= $item->get();
+              }
+          } catch (\Exception $e) {
+              echo 'Exception abgefangen set: ',  $e->getMessage(), "\n";
+          }
         }
     }
 
@@ -229,4 +332,5 @@ class Row
     {
         return $this->row;
     }
+
 }
