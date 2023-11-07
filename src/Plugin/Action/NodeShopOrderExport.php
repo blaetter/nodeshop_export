@@ -103,14 +103,14 @@ class NodeShopOrderExport extends ActionBase
                     }
                 }
                 $export['bmenge'] = $order_product->getQuantity();
-                $export['bbestelldatum'] = strftime("%Y%m%d", $order->get('changed')->value);
+                $export['bbestelldatum'] = \Drupal::service('date.formatter')->format($order->get('changed')->value, 'custom', '%Y%m%d');
                 $export['bversandkosten_fix'] = '000000';
                 $export['bversandkostenjn'] = 'n';
             } else {
               //Bestellungen abo
                 $export['bzeitschriftnr'] = Helper::getValue($node, 'field_warenid');
                 $export['bpreisnummer'] = Helper::getValue($node, 'field_preisnr');
-                $export['bbestelldatum'] = strftime("%Y%m%d", $order->get('changed')->value);
+                $export['bbestelldatum'] = \Drupal::service('date.formatter')->format($order->get('changed')->value, 'custom', '%Y%m%d');
             }
             // $order_product_data = $order_product->getData()->getValue()[0];
             // if (isset($order_product_data['bonus']) && !empty($order_product_data['bonus'])) {
