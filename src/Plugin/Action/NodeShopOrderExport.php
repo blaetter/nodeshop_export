@@ -69,7 +69,7 @@ class NodeShopOrderExport extends ActionBase
             $export['lstrasse']         = Helper::getValue($order, 'delivery_street');
             $export['lstrasse']        .= ' '.Helper::getValue($order, 'delivery_street_number');
             $export['lort']             = Helper::getValue($order, 'delivery_city');
-            $export['ladressmerkmal1']  = Helper::getValue($order, 'delivery_street_addon');
+            $export['lfirma_1']         = Helper::getValue($order, 'delivery_street_addon');
             // //Bestellungen buecher, onlineartikel etc...
             if ((
                 !$node->hasField('field_warenid')
@@ -112,6 +112,9 @@ class NodeShopOrderExport extends ActionBase
                 $export['bpreisnummer'] = Helper::getValue($node, 'field_preisnr');
                 $export['bbestelldatum'] = \Drupal::service('date.formatter')->format($order->get('changed')->value, 'custom', 'Ymd');
             }
+            // delivery starts with current edition.
+            $export['blieferung_ab_ausgabe'] = 'Ja';
+
             // $order_product_data = $order_product->getData()->getValue()[0];
             // if (isset($order_product_data['bonus']) && !empty($order_product_data['bonus'])) {
             //     // if not an array, the bonus key only contains the node id of the bonus

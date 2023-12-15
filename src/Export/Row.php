@@ -89,7 +89,7 @@ class Row
             // Neu in aktuellem Export: Shop-ID und Schulnummer
             //new SkeletonItem('shop-id', 'Shop-ID %', false, '', '', 5, 'string'),
             //new SkeletonItem('schulnummer', 'Schulnummer %', false, '', '', 5, 'string'),
-            new SkeletonItem('adressmerkmal1', 'Adr.Merkmal 1', true, '', '', 45, 'string'),
+            new SkeletonItem('adressmerkmal1', 'Firma 1', true, '', '', 45, 'string'),
             new SkeletonItem('adressmerkmal2', 'Adr.Merkmal 2', false, '', '', 45, 'string'),
             new SkeletonItem('adressmerkmal3', 'Adr.Merkmal 3', false, '', '', 45, 'string'),
             new SkeletonItem('adressmerkmal4', 'Adr.Merkmal 4', false, '', '', 45, 'string'),
@@ -134,6 +134,7 @@ class Row
             //new SkeletonItem('lhausnummerzusatz', 'LA-Hausnummerzusatz', true, '', '', 35, 'string'),
             new SkeletonItem('lort', 'LA-Ort', true, '', '', 30, 'string'),
             new SkeletonItem('lpostfach', 'LA-Postfach', false, '', '', 11, 'string'),
+            new SkeletonItem('lfirma_1', 'LA-Firma 1', true, '', '', 45, 'string'),
             // Neu in aktuellem Export: LA-Shop-OF, LA-Telefon, LA-Telefon2, LA-Handy, LA-E-Mail
             //new SkeletonItem('shop-id', 'LA-Shop-ID %', false, '', '', 5, 'string'),
             //new SkeletonItem('ltelefonvorwahl', 'LA-Telefon', false, '', '', 10, 'string'),
@@ -167,7 +168,7 @@ class Row
             new SkeletonItem('bpreisnummer', 'Preisnummer', true, '', '', 2, 'int'),
             // Neu in aktuellem Export: Lieferung ab akt Ausgabe
             //new SkeletonItem('blieferung_ab_akt_ausgabe', 'Lieferung ab akt Ausgabe', false, '', '', 3, 'int'),
-            new SkeletonItem('blieferung_ab_ausgabe', 'Lieferung ab Ausgabe', false, '', '', 3, 'int'),
+            new SkeletonItem('blieferung_ab_ausgabe', 'Lieferung ab akt. Ausgabe', true, '', '', 3, 'string'),
             new SkeletonItem('blieferung_ab_jahr', 'Lieferung ab Jahr', false, '', '', 2, 'int'),
             new SkeletonItem('blieferung_bis_ausg', 'Lieferung bis Ausgabe', false, '', '', 3, 'int'),
             new SkeletonItem('blieferung_bis_jahr', 'Lieferung bis Jahr', false, '', '', 2, 'int'),
