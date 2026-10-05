@@ -17,6 +17,16 @@ class Row
     private $skeleton;
     private $header_only;
 
+    /**
+     * Problems of the values of this row, e.g. a semicolon within a value, that shifts the columns.
+     *
+     * The values are exported unchanged, as the Verlags-DB does not cope with changed contents, so the problems are
+     * only reported.
+     *
+     * @var string[]
+     */
+    private $warnings = [];
+
     // representation of the row
     private $row;
 
@@ -287,7 +297,7 @@ class Row
                 $this->row .= $item->get();
               }
           } catch (\Exception $e) {
-              echo 'Exception abgefangen header: ',  $e->getMessage(), "\n";
+              $this->warnings[] = $e->getMessage();
           }
         }
     }
@@ -308,19 +318,64 @@ class Row
               $field->validation,
               $field->expression
           );
+          if (false == $field->accessable) {
+              continue;
+          }
+          // not every key is set for every kind of order, e.g. there is no "Zeitschrift Nummer" for books
+          $value_to_set = $this->data[$field->key] ?? '';
+          if (empty($value_to_set)) {
+              $value_to_set = '';
+          }
+          $this->checkValue($field, $value_to_set);
           try {
-              if (false != $field->accessable) {
-                  $value_to_set = $this->data[$field->key];
-                  if (empty($value_to_set)) {
-                      $value_to_set = '';
-                  }
-                  $item->set($value_to_set);
-                  $this->row .= $item->get();
-              }
+              $item->set($value_to_set);
+              $this->row .= $item->get();
           } catch (\Exception $e) {
-              echo 'Exception abgefangen set: ',  $e->getMessage(), "\n";
+              // An invalid value is exported as empty column, so the following columns stay in place.
+              $this->warnings[] = $this->getWarningPrefix() . 'ungültiger Wert "' . $value_to_set . '" in Spalte "'
+                  . $field->csv_title . '", die Spalte wurde leer exportiert.';
+              $this->row .= ';';
           }
         }
+    }
+
+    /**
+     * Reports values, that will cause problems in the Verlags-DB, without changing them.
+     *
+     * @param SkeletonItem $field The column
+     * @param mixed $value The value of the column
+     */
+    private function checkValue(SkeletonItem $field, $value)
+    {
+        $value = trim((string) $value);
+        if (preg_match('/[;\r\n]/', $value)) {
+            $this->warnings[] = $this->getWarningPrefix() . 'Spalte "' . $field->csv_title . '" enthält ein Semikolon '
+                . 'oder einen Zeilenumbruch, die Spalten dieser Zeile sind in der CSV verschoben.';
+        }
+        if (mb_strlen($value) > $field->length) {
+            $this->warnings[] = $this->getWarningPrefix() . 'Spalte "' . $field->csv_title . '" ist länger als '
+                . $field->length . ' Zeichen (' . mb_strlen($value) . ').';
+        }
+    }
+
+    /**
+     * Returns the beginning of a warning, it names the order of the row, if known.
+     *
+     * @return string
+     */
+    private function getWarningPrefix()
+    {
+        return isset($this->data['_order']) ? 'Bestellung ' . $this->data['_order'] . ': ' : '';
+    }
+
+    /**
+     * Returns the problems of the values of this row.
+     *
+     * @return string[]
+     */
+    public function getWarnings()
+    {
+        return $this->warnings;
     }
 
     /**

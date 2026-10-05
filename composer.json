@@ -2,11 +2,13 @@
     "name": "drupal/nodeshop_export",
     "type": "drupal-module",
     "description": "Exports NodeShop orders.",
-    "keywords": ["Drupal"],
-    "license": "GPL-2.0+",
+    "keywords": [
+        "Drupal"
+    ],
+    "license": "GPL-2.0-or-later",
     "version": "1.x-dev",
     "minimum-stability": "dev",
     "require": {
-        "php": ">=7.0"
+        "php": ">=8.1"
     }
 }
