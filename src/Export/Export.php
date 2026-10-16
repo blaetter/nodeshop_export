@@ -18,6 +18,9 @@ class Export
     // the data that has to be converted into an export object
     private $data;
 
+    // the problems of the values, that are exported unchanged
+    private $warnings = [];
+
     public function __construct($data)
     {
         $this->export = [];
@@ -37,6 +40,7 @@ class Export
         foreach ($this->data as $data) {
             $row = new Row($data);
             $this->export[] = $row->get();
+            $this->warnings = array_merge($this->warnings, $row->getWarnings());
         }
     }
 
@@ -49,5 +53,15 @@ class Export
     public function get()
     {
         return $this->export;
+    }
+
+    /**
+     * Returns the problems of the exported values, e.g. values, that shift the columns of the row.
+     *
+     * @return string[]
+     */
+    public function getWarnings()
+    {
+        return $this->warnings;
     }
 }

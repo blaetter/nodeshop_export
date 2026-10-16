@@ -1,0 +1,3 @@
+Anrede;Titel;Familienname;Vorname;Land ISO;Str.Plz;Straße;Ort;E-Mail;Zahlungsweg;Firma 1;LA-Anrede;LA-Titel;LA-Familienname;LA-Vorname;LA-Land ISO;LA-Str.Plz;LA-Straße;LA-Ort;LA-Firma 1;Artikelnummer;Bestellmenge;Bestelldatum JJJJMMTT;Versandkosten J/N;Zeitschrift Nummer;Preisnummer;Lieferung ab akt. Ausgabe;
+Herr;;Muster;Erika;CH;10117;Musterweg 1;Berlin;erika@example.com;Paypal;Hinterhaus;;;;;DE;;;;;;;20260928;;1;12;Ja;
+Herr;;Muster;Erika;CH;10117;Musterweg 1;Berlin;erika@example.com;Paypal;Hinterhaus;;;;;DE;;;;;;;20260928;;5;3;Ja;

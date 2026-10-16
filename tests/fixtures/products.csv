@@ -1,0 +1,5 @@
+Anrede;Titel;Familienname;Vorname;Land ISO;Str.Plz;Straße;Ort;E-Mail;Zahlungsweg;Firma 1;LA-Anrede;LA-Titel;LA-Familienname;LA-Vorname;LA-Land ISO;LA-Str.Plz;LA-Straße;LA-Ort;LA-Firma 1;Artikelnummer;Bestellmenge;Bestelldatum JJJJMMTT;Versandkosten J/N;Zeitschrift Nummer;Preisnummer;Lieferung ab akt. Ausgabe;
+Frau;Dr.;Muster;Erika;DE;10117;Musterweg 1;Berlin;erika@example.com;invoice;Hinterhaus;Herr;Prof.;Mustermann;Max;AT;1010;Ringstraße 12;Wien;Firma GmbH;4711;1;20260928;n;;;Ja;
+Frau;Dr.;Muster;Erika;DE;10117;Musterweg 1;Berlin;erika@example.com;invoice;Hinterhaus;Herr;Prof.;Mustermann;Max;AT;1010;Ringstraße 12;Wien;Firma GmbH;Art2;1;20260928;n;;;Ja;
+Frau;Dr.;Muster;Erika;DE;10117;Musterweg 1;Berlin;erika@example.com;invoice;Hinterhaus;Herr;Prof.;Mustermann;Max;AT;1010;Ringstraße 12;Wien;Firma GmbH;apart onl;2;20260928;n;;;Ja;
+Frau;Dr.;Muster;Erika;DE;10117;Musterweg 1;Berlin;erika@example.com;invoice;Hinterhaus;Herr;Prof.;Mustermann;Max;AT;1010;Ringstraße 12;Wien;Firma GmbH;apartonl9;1;20260928;n;;;Ja;

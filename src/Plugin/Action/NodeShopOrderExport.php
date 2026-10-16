@@ -3,7 +3,10 @@
 namespace Drupal\nodeshop_export\Plugin\Action;
 
 use Drupal\Core\Action\ActionBase;
+use Drupal\Core\Form\EnforcedResponseException;
+use Drupal\Core\Logger\LoggerChannelTrait;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\node\NodeInterface;
 use Drupal\nodeshop\Entity\Order;
 use Drupal\nodeshop\Entity\OrderProduct;
 use Drupal\nodeshop\NodeShop;
@@ -26,6 +29,7 @@ use Symfony\Component\HttpFoundation\ResponseHeaderBag;
  */
 class NodeShopOrderExport extends ActionBase
 {
+    use LoggerChannelTrait;
     use MessengerTrait;
     use StringTranslationTrait;
 
@@ -34,18 +38,40 @@ class NodeShopOrderExport extends ActionBase
      *
      * @var array
      */
-    private $export_data;
+    private $export_data = [];
+
+    /**
+     * Problems found while exporting, e.g. products of deleted nodes.
+     *
+     * @var string[]
+     */
+    private $warnings = [];
 
     /**
      * {@inheritdoc}
+     *
+     * @param \Drupal\nodeshop\Entity\Order|null $object
+     *   The order to export.
      */
-    public function execute(Order $order = null)
+    public function execute($object = null)
     {
+        if (!$object instanceof Order) {
+            return;
+        }
+        $order = $object;
         foreach ($order->getOrderProducts() as $order_product) {
             //Means OrderArray - not elegant but usefull
             $node = $order_product->get('nid')->entity;
+            // the product of a deleted node can not be exported, but the other products of the order can
+            if (!$node instanceof NodeInterface) {
+                $this->warnings[] = 'Bestellung ' . $order->id() . ': ein Produkt gehört zu einem gelöschten Inhalt '
+                    . 'und wurde nicht exportiert.';
+                continue;
+            }
             // $oa = array_merge($row, $entry, array('order'=>$o, 'node' => $node));
             $export = [];
+            // only used to name the order in warnings, it is not part of the CSV
+            $export['_order'] = $order->id();
             $export['anrede']           = Helper::getSalutation(Helper::getValue($order, 'customer_title'));
             $export['titel']            = Helper::getTitle(Helper::getValue($order, 'customer_title'));
             $export['familienname']     = Helper::getValue($order, 'customer_last_name');
@@ -103,14 +129,14 @@ class NodeShopOrderExport extends ActionBase
                     }
                 }
                 $export['bmenge'] = $order_product->getQuantity();
-                $export['bbestelldatum'] = \Drupal::service('date.formatter')->format($order->get('changed')->value, 'custom', 'Ymd');
+                $export['bbestelldatum'] = \Drupal::service('date.formatter')->format($this->getOrderDate($order), 'custom', 'Ymd');
                 $export['bversandkosten_fix'] = '000000';
                 $export['bversandkostenjn'] = 'n';
             } else {
               //Bestellungen abo
                 $export['bzeitschriftnr'] = Helper::getValue($node, 'field_warenid');
                 $export['bpreisnummer'] = Helper::getValue($node, 'field_preisnr');
-                $export['bbestelldatum'] = \Drupal::service('date.formatter')->format($order->get('changed')->value, 'custom', 'Ymd');
+                $export['bbestelldatum'] = \Drupal::service('date.formatter')->format($this->getOrderDate($order), 'custom', 'Ymd');
             }
             // delivery starts with current edition.
             $export['blieferung_ab_ausgabe'] = 'Ja';
@@ -165,6 +191,63 @@ class NodeShopOrderExport extends ActionBase
     }
 
     /**
+     * The entry of the order history, when the user submits the checkout.
+     *
+     * @see \Drupal\nodeshop\Form\OrderCheckoutForm::submitForm()
+     */
+    const HISTORY_CHECKOUT_FINISHED = 'User finished Checkout.';
+
+    /**
+     * The entry of the order history, when the status of the order changes.
+     *
+     * @see \Drupal\nodeshop\Entity\Order::setOrderStatus()
+     */
+    const HISTORY_STATUS_CHANGED = 'Set order status from "@old_status" to "@new_status".';
+
+    /**
+     * Returns the date of the order.
+     *
+     * The order is created, when the user starts the checkout in the cart, and may be completed much later. So the
+     * date is taken from the order history, in this order:
+     * - the first change of the status to completed (the order is placed and, if necessary, paid),
+     * - the first submit of the checkout,
+     * - the creation of the order, e.g. for orders migrated from the lightshop, that have no history,
+     * - the last change of the order.
+     * The last change is only a fallback, as it changes with every save, e.g. when the order is marked as exported.
+     *
+     * @param \Drupal\nodeshop\Entity\Order $order
+     * @return int The timestamp of the order
+     */
+    protected function getOrderDate(Order $order)
+    {
+        $checkout_finished = null;
+        $entries = \Drupal::database()->query(
+            'SELECT entry, variables, timestamp FROM {nodeshop_order_history}'
+            . ' WHERE order_id = :order_id AND entry IN (:entries[]) ORDER BY timestamp ASC, id ASC',
+            [
+                ':order_id' => $order->id(),
+                ':entries[]' => [self::HISTORY_CHECKOUT_FINISHED, self::HISTORY_STATUS_CHANGED],
+            ]
+        )->fetchAll();
+
+        foreach ($entries as $entry) {
+            if (self::HISTORY_STATUS_CHANGED === $entry->entry) {
+                $variables = @unserialize((string) $entry->variables, ['allowed_classes' => false]);
+                if (is_array($variables)
+                    && Order::NODESHOP_ORDER_STATUS_COMPLETED === ($variables['@new_status'] ?? null)
+                ) {
+                    return (int) $entry->timestamp;
+                }
+            } elseif (null === $checkout_finished) {
+                $checkout_finished = (int) $entry->timestamp;
+            }
+        }
+
+        return $checkout_finished
+            ?? (int) ($order->get('created')->value ?: $order->get('changed')->value);
+    }
+
+    /**
     * {@inheritdoc}
     */
     public function executeMultiple(array $entities)
@@ -178,6 +261,9 @@ class NodeShopOrderExport extends ActionBase
         $exportstring = implode("\n", $exportdata);
 
         $response = new Response($exportstring);
+        // the export contains personal data, so it must not be stored by any cache
+        $response->setPrivate();
+        $response->headers->addCacheControlDirective('no-store');
 
         $disposition = $response->headers->makeDisposition(
             ResponseHeaderBag::DISPOSITION_ATTACHMENT,
@@ -186,8 +272,6 @@ class NodeShopOrderExport extends ActionBase
 
         $response->headers->set('Content-Type', 'text/csv; charset=utf-8');
         $response->headers->set('Content-Disposition', $disposition);
-
-        $response->send();
 
         // mark entities as exported.
         foreach ($entities as $entity) {
@@ -206,17 +290,22 @@ class NodeShopOrderExport extends ActionBase
             'Über die Suche können die Datensätze wieder gefunden und bei Bedarf erneut exportiert werden.'
         );
 
-        // we cut hard here, so no extra content is transmitted from Drupal
-        // it would be quite nice, if there is another way to handle the request
-        // but as long as action plugins does not transfer return values to the
-        // end user, we need to do it this way.
-        exit;
+        // The values are exported unchanged, as the Verlags-DB does not cope with changed contents. Problems are
+        // reported, so the orders can be checked before importing the file.
+        foreach (array_merge($this->warnings, $export->getWarnings()) as $warning) {
+            $this->getLogger('nodeshop_export')->warning($warning);
+            $this->messenger()->addWarning($warning);
+        }
+
+        // Action plugins can not return a response, so the download is sent via an exception, that Drupal turns into
+        // the response of the request. Unlike "exit" this lets Drupal finish the request, e.g. store the messages.
+        throw new EnforcedResponseException($response);
     }
 
     /**
      * {@inheritdoc}
      */
-    public function access($object, AccountInterface $account = null, $return_as_object = false)
+    public function access($object, ?AccountInterface $account = null, $return_as_object = false)
     {
         $result = $object->access('export', $account, true);
 

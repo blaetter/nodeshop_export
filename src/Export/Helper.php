@@ -34,8 +34,8 @@ class Helper
      */
     public static function getCountryCode($value)
     {
-        // trim the value so that no whitespace can cause problems
-        $value = trim($value);
+        // trim the value so that no whitespace can cause problems, empty fields are null
+        $value = trim((string) $value);
 
         // if there is no value given or its "deutschland", return "DE" as default
         if (mb_strtolower($value, 'UTF-8') == 'deutschland' || empty($value)) {
@@ -317,6 +317,7 @@ class Helper
      */
     public static function getSalutation($value)
     {
+        $value = (string) $value;
         if (false !== strpos($value, 'Frau')) {
             return 'Frau';
         } elseif (false !== strpos($value, 'Herr')) {
@@ -336,6 +337,7 @@ class Helper
      */
     public static function getTitle($value)
     {
+        $value = (string) $value;
         if (false !== strpos($value, 'Dr')) {
             return 'Dr.';
         } elseif (false !== strpos($value, 'Prof')) {
@@ -357,6 +359,7 @@ class Helper
      */
     public static function getPaymentLabel($label)
     {
+        $label = (string) $label;
         if (false !== strpos(strtolower($label), 'paypal')) {
             return 'Paypal';
         } elseif (false !== strpos(strtolower($label), 'invoice')) {
