@@ -4,6 +4,7 @@ namespace Drupal\Tests\nodeshop_export\Unit;
 
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Database\StatementInterface;
+use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Datetime\DateFormatterInterface;
 use Drupal\Core\DependencyInjection\ContainerBuilder;
 use Drupal\Core\Form\EnforcedResponseException;
@@ -33,6 +34,11 @@ use Psr\Log\LoggerInterface;
 #[Group('nodeshop_export')]
 class ExportWarningsTest extends UnitTestCase
 {
+    /**
+     * The time of the export.
+     */
+    const EXPORTED_AT = 1792400000;
+
     /**
      * The messages shown to the user, keyed by type.
      *
@@ -88,6 +94,9 @@ class ExportWarningsTest extends UnitTestCase
         $database = $this->createMock(Connection::class);
         $database->method('query')->willReturn($statement);
         $container->set('database', $database);
+        $time = $this->createMock(TimeInterface::class);
+        $time->method('getRequestTime')->willReturn(self::EXPORTED_AT);
+        $container->set('datetime.time', $time);
         \Drupal::setContainer($container);
         NodeShop::$config = null;
     }
@@ -207,7 +216,9 @@ class ExportWarningsTest extends UnitTestCase
         $order = $this->createMock(Order::class);
         $order->method('id')->willReturn($id);
         $order->method('getOrderProducts')->willReturn($order_products);
-        $order->method('hasField')->willReturnCallback(fn ($field) => 'exported' === $field || isset($values[$field]));
+        $order->method('hasField')->willReturnCallback(
+            fn ($field) => in_array($field, ['exported', 'last_exported'], true) || isset($values[$field])
+        );
         $order->method('get')->willReturnCallback(fn ($field) => (object) ['value' => $values[$field] ?? null]);
         $order->method('getCustomerEmail')->willReturn('erika@example.com');
         $order->method('getPaymentMethodLabel')->willReturn('Invoice');
@@ -252,12 +263,23 @@ class ExportWarningsTest extends UnitTestCase
     {
         $orders = [];
         $exported = [];
+        $syncing = [];
         foreach ([4711, 4712] as $id) {
             $order = $this->createOrder($id, 4711 === $id ? [null, $this->createStory()] : [$this->createStory()]);
             $exported[$id] = (object) ['value' => false];
             $order->method('__get')->with('exported')->willReturn($exported[$id]);
             $order->expects($this->once())->method('addOrderHistoryEntry')->with('Exported order', []);
-            $order->expects($this->once())->method('save');
+            $order->expects($this->once())->method('set')->with('last_exported', self::EXPORTED_AT);
+            // saved as syncing, so the date of the last change of the order stays the same
+            $syncing[$id] = [];
+            $order->method('setSyncing')->willReturnCallback(function ($value) use (&$syncing, $id, $order) {
+                $syncing[$id][] = $value;
+                return $order;
+            });
+            $order->expects($this->once())->method('save')->willReturnCallback(function () use (&$syncing, $id) {
+                $this->assertSame([true], $syncing[$id], 'The order is saved while syncing.');
+                return 2;
+            });
             $orders[] = $order;
         }
 
@@ -277,6 +299,7 @@ class ExportWarningsTest extends UnitTestCase
 
         $this->assertTrue($exported[4711]->value);
         $this->assertTrue($exported[4712]->value);
+        $this->assertSame([4711 => [true, false], 4712 => [true, false]], $syncing);
         $this->assertCount(1, $this->messages['status']);
         $warning = 'Bestellung 4711: ein Produkt gehört zu einem gelöschten Inhalt und wurde nicht exportiert.';
         $this->assertSame([$warning], $this->messages['warning']);

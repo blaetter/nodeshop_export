@@ -37,8 +37,9 @@ class OrderDateTest extends UnitTestCase
      *
      * @param array $history The history entries as [entry, variables, timestamp], sorted by time
      * @param int|null $created The creation date of the order
+     * @param int|null $completed The field completed of the order
      */
-    private function getOrderDate(array $history, ?int $created = self::CREATED): int
+    private function getOrderDate(array $history, ?int $created = self::CREATED, ?int $completed = null): int
     {
         $statement = $this->createMock(StatementInterface::class);
         $statement->method('fetchAll')->willReturn(array_map(
@@ -54,9 +55,10 @@ class OrderDateTest extends UnitTestCase
         $container->set('database', $database);
         \Drupal::setContainer($container);
 
-        $values = ['created' => $created, 'changed' => self::CHANGED];
+        $values = ['created' => $created, 'changed' => self::CHANGED, 'completed' => $completed];
         $order = $this->createMock(Order::class);
         $order->method('id')->willReturn(4711);
+        $order->method('hasField')->willReturnCallback(fn ($field) => array_key_exists($field, $values));
         $order->method('get')->willReturnCallback(fn ($field) => (object) ['value' => $values[$field]]);
 
         $action = new NodeShopOrderExport([], 'nodeshop_export_export', ['provider' => 'nodeshop_export']);
@@ -113,6 +115,18 @@ class OrderDateTest extends UnitTestCase
     {
         $this->assertSame($expected, $this->getOrderDate($history));
         $this->assertSame(4711, $this->query_arguments[':order_id']);
+    }
+
+    /**
+     * Tests, that the field completed of the NodeShop is used without reading the history.
+     */
+    public function testCompletedField(): void
+    {
+        $finished = [NodeShopOrderExport::HISTORY_CHECKOUT_FINISHED, serialize([]), 1790500000];
+        $this->query_arguments = [];
+
+        $this->assertSame(1790600000, $this->getOrderDate([$finished], self::CREATED, 1790600000));
+        $this->assertSame([], $this->query_arguments, 'The history is not read.');
     }
 
     /**

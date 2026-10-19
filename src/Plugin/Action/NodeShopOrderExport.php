@@ -207,6 +207,9 @@ class NodeShopOrderExport extends ActionBase
     /**
      * Returns the date of the order.
      *
+     * This is the time the order was completed (field completed of the NodeShop). Orders without it, e.g. orders that
+     * were never completed, get the date from the history like before the field existed.
+     *
      * The order is created, when the user starts the checkout in the cart, and may be completed much later. So the
      * date is taken from the order history, in this order:
      * - the first change of the status to completed (the order is placed and, if necessary, paid),
@@ -220,6 +223,10 @@ class NodeShopOrderExport extends ActionBase
      */
     protected function getOrderDate(Order $order)
     {
+        if ($order->hasField('completed') && !empty($order->get('completed')->value)) {
+            return (int) $order->get('completed')->value;
+        }
+
         $checkout_finished = null;
         $entries = \Drupal::database()->query(
             'SELECT entry, variables, timestamp FROM {nodeshop_order_history}'
@@ -274,14 +281,21 @@ class NodeShopOrderExport extends ActionBase
         $response->headers->set('Content-Disposition', $disposition);
 
         // mark entities as exported.
+        $exported_at = \Drupal::time()->getRequestTime();
         foreach ($entities as $entity) {
             if ($entity->hasField('exported')) {
                 $entity->exported->value = true;
+                if ($entity->hasField('last_exported')) {
+                    $entity->set('last_exported', $exported_at);
+                }
                 $entity->addOrderHistoryEntry(
                     'Exported order',
                     []
                 );
+                // The export does not change the data of the order, so the date of its last change stays the same.
+                $entity->setSyncing(true);
                 $entity->save();
+                $entity->setSyncing(false);
             }
         }
 

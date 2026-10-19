@@ -9,6 +9,7 @@ The CSV is imported into the Verlags-DB, which does not cope with any change of 
 ## Unreleased
 
 ### Features
+- The export sets the time of the export in the field `last_exported` of the NodeShop and keeps the date of the last change of the orders (an export does not change the order, it is noted in the order history as well)
 - Values that cause problems in the Verlags-DB (semicolons or line breaks, too long values) are reported after the export; the CSV itself stays unchanged
 
 ### Security
@@ -22,6 +23,7 @@ The CSV is imported into the Verlags-DB, which does not cope with any change of 
 - The message after the export was never shown, as the request was ended with `exit`
 
 ### Maintenance
+- The order date is read from the field `completed` of the NodeShop instead of the order history; orders without it (never completed) still get it from the history, so the CSV stays the same (checked for all 29,371 local orders)
 - Compatibility with PHP 8.4 (explicitly nullable parameters, no null values for string functions, no undefined array keys) and the upcoming signature of `execute()`
 - Unit tests, including a byte by byte comparison of the CSV with the output before the refactoring (only the order date differs)
 - License and PHP version in `composer.json`
