@@ -83,6 +83,7 @@ class NodeShopOrderExport extends ActionBase
             $export['ort']              = Helper::getValue($order, 'customer_city');
             $export['adressmerkmal1']   = Helper::getValue($order, 'customer_street_addon');
             $export['email']            = $order->getCustomerEmail();
+            $export['fremdsprache']     = '0'; // 0 als Fallback für Deutsch
             $export['rechnungsart']     = Helper::getPaymentLabel($this->t($order->getPaymentMethodLabel())->__toString());
             //Abweichende Lieferadresse, falls
             $export['lanrede']          = Helper::getSalutation(Helper::getValue($order, 'delivery_title'));
@@ -96,6 +97,7 @@ class NodeShopOrderExport extends ActionBase
             $export['lstrasse']        .= ' '.Helper::getValue($order, 'delivery_street_number');
             $export['lort']             = Helper::getValue($order, 'delivery_city');
             $export['lfirma_1']         = Helper::getValue($order, 'delivery_street_addon');
+            $export['lfremdsprache']    = '0'; // 0 als Fallback für Deutsch
             // //Bestellungen buecher, onlineartikel etc...
             if ((
                 !$node->hasField('field_warenid')

@@ -90,7 +90,7 @@ class Row
             // Neu in aktuellem Export: Mandatsreferenz und -Datum
             //new SkeletonItem('mandatsreferenz', 'Mandatsreferenz', false, '', '', 1, 'int'),
             //new SkeletonItem('mandatsdatum', 'Mandatsdatum', false, '', '', 1, 'int'),
-            new SkeletonItem('fremdsprache', 'Fremdsprache', false, '', '', 1, 'int'),
+            new SkeletonItem('fremdsprache', 'Fremdsprache', true, '', '', 1, 'int', true),
             new SkeletonItem('fremdwaehrung', 'Fremdwährung', false, '', '', 3, 'string'),
             new SkeletonItem('geburtsdatum', 'Datum JJJJMMTT', false, '', '', 8, 'int'),
             new SkeletonItem('kundengruppe', 'Kundengruppe', false, '', '', 2, 'string'),
@@ -146,6 +146,7 @@ class Row
             new SkeletonItem('lpostfach', 'LA-Postfach', false, '', '', 11, 'string'),
             new SkeletonItem('lfirma_1', 'LA-Firma 1', true, '', '', 45, 'string'),
             // Neu in aktuellem Export: LA-Shop-OF, LA-Telefon, LA-Telefon2, LA-Handy, LA-E-Mail
+            new SkeletonItem('lfremdsprache', 'LA Fremdsprache', true, '', '', 1, 'int', true),
             //new SkeletonItem('shop-id', 'LA-Shop-ID %', false, '', '', 5, 'string'),
             //new SkeletonItem('ltelefonvorwahl', 'LA-Telefon', false, '', '', 10, 'string'),
             //new SkeletonItem('ltelefon', 'LA-Telefon2', false, '', '', 25, 'string'),
@@ -323,7 +324,9 @@ class Row
           }
           // not every key is set for every kind of order, e.g. there is no "Zeitschrift Nummer" for books
           $value_to_set = $this->data[$field->key] ?? '';
-          if (empty($value_to_set)) {
+          // empty() is also true for 0 and '0': those stay only in columns that keep them (keep_zero).
+          $is_zero = $value_to_set === 0 || $value_to_set === '0';
+          if (empty($value_to_set) && !($field->keep_zero && $is_zero)) {
               $value_to_set = '';
           }
           $this->checkValue($field, $value_to_set);

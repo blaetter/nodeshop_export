@@ -18,11 +18,20 @@ class SkeletonItem
     public $type;
 
     /**
+     * Whether a 0 is exported as 0. Otherwise empty values, including 0 and '0', are exported as empty column, which
+     * the existing columns rely on (the CSV of the Verlags-DB must not change).
+     *
+     * @var bool
+     */
+    public $keep_zero;
+
+    /**
      * initialize the value with the given parameters
      *
      */
-    public function __construct($key, $csv_title, $accessable, $validation, $expression, $length, $type)
+    public function __construct($key, $csv_title, $accessable, $validation, $expression, $length, $type, $keep_zero = false)
     {
+        $this->keep_zero = $keep_zero;
         $this->key = $key;
         $this->csv_title = $csv_title;
         $this->accessable = $accessable;
@@ -48,7 +57,8 @@ class SkeletonItem
             'length' => $this->length,
             'type' => $this->type,
             'validation' => $this->validation,
-            'expression' => $this->expression
+            'expression' => $this->expression,
+            'keep_zero' => $this->keep_zero
         ];
     }
 }

@@ -9,6 +9,7 @@ The CSV is imported into the Verlags-DB, which does not cope with any change of 
 ## Unreleased
 
 ### Features
+- New columns "Fremdsprache" (after "Zahlungsweg") and "LA Fremdsprache" (after "LA-Firma 1"), both 0 for German. A column can keep a 0 now (`SkeletonItem` parameter `keep_zero`); all other columns still export 0 and '0' as empty column, as before
 - The export sets the time of the export in the field `last_exported` of the NodeShop and keeps the date of the last change of the orders (an export does not change the order, it is noted in the order history as well)
 - Values that cause problems in the Verlags-DB (semicolons or line breaks, too long values) are reported after the export; the CSV itself stays unchanged
 

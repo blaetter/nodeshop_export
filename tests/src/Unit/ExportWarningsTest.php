@@ -110,9 +110,9 @@ class ExportWarningsTest extends UnitTestCase
             '_order' => 4711,
             'anrede' => 'Frau', 'titel' => '', 'familienname' => 'Muster', 'vorname' => 'Erika', 'land' => 'DE',
             'plz_strasse' => '10117', 'strasse' => 'Musterweg 1', 'ort' => 'Berlin', 'email' => 'erika@example.com',
-            'rechnungsart' => 'invoice', 'adressmerkmal1' => '', 'lanrede' => '', 'ltitel' => '',
+            'rechnungsart' => 'invoice', 'fremdsprache' => '0', 'adressmerkmal1' => '', 'lanrede' => '', 'ltitel' => '',
             'lfamilienname' => '', 'lvorname' => '', 'lland' => 'DE', 'lplz_strasse' => '', 'lstrasse' => ' ',
-            'lort' => '', 'lfirma_1' => '', 'bartikelnummer' => 'Art1', 'bmenge' => 1, 'bbestelldatum' => '20261005',
+            'lort' => '', 'lfirma_1' => '', 'lfremdsprache' => '0', 'bartikelnummer' => 'Art1', 'bmenge' => 1, 'bbestelldatum' => '20261005',
             'bversandkostenjn' => 'n', 'blieferung_ab_ausgabe' => 'Ja',
         ];
     }
@@ -132,9 +132,22 @@ class ExportWarningsTest extends UnitTestCase
     {
         $row = new Row($this->getRowData());
 
-        $this->assertSame(27, $this->countColumns($row->get()));
+        $this->assertSame(29, $this->countColumns($row->get()));
         $this->assertSame([], $row->getWarnings());
         $this->assertStringNotContainsString('4711', $row->get(), 'The order id is not part of the CSV.');
+    }
+
+    /**
+     * Tests, that only the columns with keep_zero export a 0, all others export it as empty column as before.
+     */
+    public function testZeroOnlyInColumnsThatKeepIt(): void
+    {
+        $row = new Row($this->getRowData(['fremdsprache' => 0, 'bmenge' => 0, 'bzeitschriftnr' => '0']));
+
+        $this->assertStringContainsString(';invoice;0;;', $row->get(), 'Fremdsprache keeps the 0 (also as int).');
+        $this->assertStringContainsString(';;0;Art1;;20261005;', $row->get(), 'LA Fremdsprache keeps the 0, Bestellmenge not.');
+        $this->assertStringEndsWith(';n;;;Ja;', $row->get(), 'Zeitschrift Nummer exports \'0\' as empty column.');
+        $this->assertSame([], $row->getWarnings());
     }
 
     /**
@@ -144,7 +157,7 @@ class ExportWarningsTest extends UnitTestCase
     {
         $row = new Row($this->getRowData(['bmenge' => '2a']));
 
-        $this->assertSame(27, $this->countColumns($row->get()));
+        $this->assertSame(29, $this->countColumns($row->get()));
         $this->assertStringContainsString(';Art1;;20261005;', $row->get());
         $this->assertSame(
             ['Bestellung 4711: ungültiger Wert "2a" in Spalte "Bestellmenge", die Spalte wurde leer exportiert.'],
